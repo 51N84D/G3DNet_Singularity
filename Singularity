@@ -1,96 +1,102 @@
-Bootstrap: docker
-From: nvidia/cuda:9.0-cudnn7-devel-centos7
-
-%help
-Centos7 with cuda9.0 cudnn7
-
-To start your container simply try
-singularity exec THIS_CONTAINER.simg bash
-
-To use GPUs, try
-singularity exec --nv THIS_CONTAINER.simg bash
+BootStrap: docker
+From: nvidia/cuda:9.0-devel-ubuntu16.04
+# -----------------------------------------------------------------------------------
+# This is a port of the Dockerfile maintained at https://github.com/uber/horovod
 
 
 %environment
+# -----------------------------------------------------------------------------------
 
-    # for system
-    export CUDA_DEVICE_ORDER=PCI_BUS_ID
+    export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+    export LC_ALL=C
+    export HOROVOD_GPU_ALLREDUCE=NCCL
+    export HOROVOD_GPU_ALLGATHER=MPI
+    export HOROVOD_GPU_BROADCAST=MPI
+    export HOROVOD_NCCL_HOME=/usr/local/cuda/nccl
+    export HOROVOD_NCCL_INCLUDE=/usr/local/cuda/nccl/include
+    export HOROVOD_NCCL_LIB=/usr/local/cuda/nccl/lib 
+    export PYTHON_VERSION=2.7
+    export TENSORFLOW_VERSION=1.11.0
+    export PYTORCH_VERSION=0.4.1
+    export CUDNN_VERSION=7.3.1.20-1+cuda9.0
+    export NCCL_VERSION=2.3.5-2+cuda9.0
 
-    # Add cupti to the path for profiling:
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/extras/CUPTI/lib64
+%post
+# -----------------------------------------------------------------------------------
+# this will install all necessary packages and prepare the container
 
-    source scl_source enable devtoolset-4
-
-    export PATH=/usr/local/mpich/install/bin/:${PATH}
-    export LD_LIBRARY_PATH=/usr/local/mpich/install/lib/:${LD_LIBRARY_PATH}
- 
-%post 
- 
-    # yum basics 
-    yum update -y 
-    yum groupinstall -y "Development Tools" 
-    yum install -y epel-release 
-    yum install -y centos-release-scl 
-    yum install -y devtoolset-4 
-    yum install -y wget emacs vim 
-    yum install -y emacs vim openssh-clients zip 
-    yum install -y python-devel python-pip python-setuptools 
-    yum install -y hdf5 
- 
-    # pip basics 
-    pip --no-cache-dir --disable-pip-version-check install --upgrade setuptools 
-    pip --no-cache-dir --disable-pip-version-check install future 
-    pip --no-cache-dir --disable-pip-version-check install 'matplotlib<3.0' # for python2.7 
-    pip --no-cache-dir --disable-pip-version-check install 'ipython<6.0'    # for python2.7 
-    pip --no-cache-dir --disable-pip-version-check install 'ipykernel<5.0'  # for python2.7 
-    pip --no-cache-dir --disable-pip-version-check install numpy wheel zmq six pygments pyyaml cython gputil psutil humanize h5py tqdm scipy seaborn tables 
-    pip --no-cache-dir --disable-pip-version-check install  pandas scikit-image scikit-learn Pillow opencv-python 
-    pip --no-cache-dir --disable-pip-version-check install jupyter notebook 
- 
-  # tensorflow 
-    pip --no-cache-dir --disable-pip-version-check install --upgrade tensorflow-gpu==1.12.0
-    pip --no-cache-dir --disable-pip-version-check install tensorboard 
-   	  
-  # keras 
-    pip --no-cache-dir --disable-pip-version-check install keras
+# TensorFlow version is tightly coupled to CUDA and cuDNN so it should be selected carefully
+# Python 2.7 or 3.5 is supported by Ubuntu Xenial out of the box
 
 
-  # install MPICH 
-    wget -q http://www.mpich.org/static/downloads/3.2.1/mpich-3.2.1.tar.gz 
-    tar xf mpich-3.2.1.tar.gz 
-    rm mpich-3.2.1.tar.gz 
-    cd mpich-3.2.1 
-    # disable the addition of the RPATH to compiled executables 
-    # this allows us to override the MPI libraries to use those 
-    # found via LD_LIBRARY_PATH 
-    ./configure --prefix=/usr/local/mpich/install --disable-wrapper-rpath 
-    make -j 4 install 
-    # add to local environment to build pi.c 
-    export PATH=$PATH:/usr/local/mpich//install/bin 
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/mpich//install/lib 
-    env | sort 
-    cd .. 
-    rm -rf mpich-3.2.1 
- 
-  #Other dependencies
-    pip --no-cache-dir --disable-pip-version-check install pyamg
-    pip --no-cache-dir --disable-pip-version-check install transforms3d
+    export PYTHON_VERSION=2.7
+    export TENSORFLOW_VERSION=1.11.0
+    export PYTORCH_VERSION=0.4.1
+    export CUDNN_VERSION=7.3.1.20-1+cuda9.0
+    export NCCL_VERSION=2.3.5-2+cuda9.0
 
-  # nccl2
-    git clone https://github.com/NVIDIA/nccl.git
-    cd nccl;
-    make -j src.build
-    make pkg.redhat.build
-    rpm -i build/pkg/rpm/x86_64/libnccl* 
-    cd -
+    echo "deb http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1604/x86_64 /" > /etc/apt/sources.list.d/nvidia-ml.list
 
+    apt-get -y update && apt-get install -y --no-install-recommends \
+        build-essential \
+        cmake \
+        git \
+        curl \
+        vim \
+        wget \
+        ca-certificates \
+        libcudnn7=${CUDNN_VERSION} \
+        libnccl2=${NCCL_VERSION} \
+        libnccl-dev=${NCCL_VERSION} \
+        libjpeg-dev \
+        libpng-dev \
+        python${PYTHON_VERSION} \
+        python${PYTHON_VERSION}-dev
 
-    ldconfig /usr/local/cuda/lib64/stubs
-  # install Horovod, add other HOROVOD_* environment variables as necessary
-    HOROVOD_GPU_ALLREDUCE=NCCL HOROVOD_WITH_TENSORFLOW=1 HOROVOD_NCCL_HOME=/nccl/build/ pip install --no-cache-dir horovod
+    ln -s /usr/bin/python${PYTHON_VERSION} /usr/bin/python
 
-  # revert to standard libraries
+    curl -O https://bootstrap.pypa.io/get-pip.py && \
+    python get-pip.py && \
+    rm get-pip.py
+
+# Install TensorFlow, Keras and PyTorch
+    pip install tensorflow-gpu==${TENSORFLOW_VERSION} keras h5py torch==${PYTORCH_VERSION} torchvision
+
+# Install the IB verbs
+    apt install -y --no-install-recommends libibverbs*
+    apt install -y --no-install-recommends ibverbs-utils librdmacm* infiniband-diags libmlx4* libmlx5* libnuma*
+
+# Install Open MPI
+    mkdir -p /tmp/openmpi && \
+    cd /tmp/openmpi && \
+    wget https://www.open-mpi.org/software/ompi/v3.1/downloads/openmpi-3.1.2.tar.gz && \
+    tar zxf openmpi-3.1.2.tar.gz && \
+    cd openmpi-3.1.2 && \
+    ./configure --enable-orterun-prefix-by-default && \
+    make -j $(nproc) all && \
+    make install && \
+    ldconfig && \
+    rm -rf /tmp/openmpi
+    cd /root
+
+# Install Horovod, temporarily using CUDA stubs
+    ldconfig /usr/local/cuda-9.0/targets/x86_64-linux/lib/stubs && \
+    HOROVOD_GPU_ALLREDUCE=NCCL HOROVOD_WITH_TENSORFLOW=1 HOROVOD_WITH_PYTORCH=1 pip install --no-cache-dir horovod && \
     ldconfig
 
- 
+# Configure OpenMPI to run good defaults:
+#   --bind-to none --map-by slot --mca btl_tcp_if_exclude lo,docker0
+    echo "hwloc_base_binding_policy = none" >> /usr/local/etc/openmpi-mca-params.conf && \
+    echo "rmaps_base_mapping_policy = slot" >> /usr/local/etc/openmpi-mca-params.conf 
+    #echo "btl_tcp_if_exclude = lo,docker0" >> /usr/local/etc/openmpi-mca-params.conf
+
+# Set default NCCL parameters
+    echo NCCL_DEBUG=INFO >> /etc/nccl.conf && \
+    echo NCCL_SOCKET_IFNAME=^docker0 >> /etc/nccl.conf
+
+# Download examples
+    cd / && \
+    apt-get install -y --no-install-recommends subversion && \
+    svn checkout https://github.com/uber/horovod/trunk/examples && \
+    rm -rf /examples/.svn
 
