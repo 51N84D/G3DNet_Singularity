@@ -8,6 +8,7 @@ From: nvidia/cuda:9.0-devel-ubuntu16.04
 # -----------------------------------------------------------------------------------
 
     export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-9.0/targets/x86_64-linux/lib/stubs
     export LC_ALL=C
     export HOROVOD_GPU_ALLREDUCE=NCCL
     export HOROVOD_GPU_ALLGATHER=MPI
@@ -62,8 +63,17 @@ From: nvidia/cuda:9.0-devel-ubuntu16.04
 
 # Install TensorFlow, Keras and PyTorch and other g3dnet dependencies
     pip install tensorflow-gpu==${TENSORFLOW_VERSION} keras h5py torch==${PYTORCH_VERSION} torchvision
+    pip --no-cache-dir --disable-pip-version-check install --upgrade setuptools
+    pip --no-cache-dir --disable-pip-version-check install future
+    pip --no-cache-dir --disable-pip-version-check install 'matplotlib<3.0' # for python2.7
+    pip --no-cache-dir --disable-pip-version-check install 'ipython<6.0'    # for python2.7
+    pip --no-cache-dir --disable-pip-version-check install 'ipykernel<5.0'  # for python2.7
+    pip --no-cache-dir --disable-pip-version-check install numpy wheel zmq six pygments pyyaml cython gputil psutil humanize h5py tqdm scipy seaborn tables
+    pip --no-cache-dir --disable-pip-version-check install  pandas scikit-image scikit-learn Pillow opencv-python
+    pip --no-cache-dir --disable-pip-version-check install jupyter notebook
     pip --no-cache-dir --disable-pip-version-check install transforms3d
     pip --no-cache-dir --disable-pip-version-check install pyamg
+
 
 # Install the IB verbs
     apt install -y --no-install-recommends libibverbs*
@@ -96,4 +106,5 @@ From: nvidia/cuda:9.0-devel-ubuntu16.04
 # Set default NCCL parameters
     echo NCCL_DEBUG=INFO >> /etc/nccl.conf && \
     echo NCCL_SOCKET_IFNAME=^docker0 >> /etc/nccl.conf
+
 
