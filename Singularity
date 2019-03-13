@@ -73,9 +73,8 @@ singularity exec --nv THIS_CONTAINER.simg bash
     rm -rf mpich-3.2.1 
  
   #Other dependencies
-    pip --no-cache-dir --disable-pip-version-check install transforms3d
     pip --no-cache-dir --disable-pip-version-check install pyamg
-
+    pip --no-cache-dir --disable-pip-version-check install transforms3d
 
   # nccl2
     git clone https://github.com/NVIDIA/nccl.git
