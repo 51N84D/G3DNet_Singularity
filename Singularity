@@ -38,6 +38,7 @@ From: nvidia/cuda:9.0-devel-ubuntu16.04
     echo "deb http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1604/x86_64 /" > /etc/apt/sources.list.d/nvidia-ml.list
 
     apt-get -y update && apt-get install -y --allow-downgrades --allow-change-held-packages --no-install-recommends \
+        mlocate \
         build-essential \
         cmake \
         git \
@@ -59,8 +60,10 @@ From: nvidia/cuda:9.0-devel-ubuntu16.04
     python get-pip.py && \
     rm get-pip.py
 
-# Install TensorFlow, Keras and PyTorch
+# Install TensorFlow, Keras and PyTorch and other g3dnet dependencies
     pip install tensorflow-gpu==${TENSORFLOW_VERSION} keras h5py torch==${PYTORCH_VERSION} torchvision
+    pip --no-cache-dir --disable-pip-version-check install transforms3d
+    pip --no-cache-dir --disable-pip-version-check install pyamg
 
 # Install the IB verbs
     apt install -y --no-install-recommends libibverbs*
@@ -93,10 +96,4 @@ From: nvidia/cuda:9.0-devel-ubuntu16.04
 # Set default NCCL parameters
     echo NCCL_DEBUG=INFO >> /etc/nccl.conf && \
     echo NCCL_SOCKET_IFNAME=^docker0 >> /etc/nccl.conf
-
-# Download examples
-    cd / && \
-    apt-get install -y --no-install-recommends subversion && \
-    svn checkout https://github.com/uber/horovod/trunk/examples && \
-    rm -rf /examples/.svn
 
