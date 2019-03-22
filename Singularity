@@ -18,7 +18,7 @@ From: nvidia/cuda:9.0-devel-ubuntu16.04
     export HOROVOD_NCCL_LIB=/usr/local/cuda/nccl/lib 
     export PYTHON_VERSION=2.7
     export TENSORFLOW_VERSION=1.11.0
-    export PYTORCH_VERSION=0.4.1
+
     export CUDNN_VERSION=7.3.1.20-1+cuda9.0
     export NCCL_VERSION=2.3.5-2+cuda9.0
     export PATH=/usr/local/mpich/install/bin/:${PATH}
@@ -34,7 +34,7 @@ From: nvidia/cuda:9.0-devel-ubuntu16.04
 
     export PYTHON_VERSION=2.7
     export TENSORFLOW_VERSION=1.11.0
-    export PYTORCH_VERSION=0.4.1
+
     export CUDNN_VERSION=7.3.1.20-1+cuda9.0
     export NCCL_VERSION=2.3.5-2+cuda9.0
 
@@ -64,7 +64,8 @@ From: nvidia/cuda:9.0-devel-ubuntu16.04
     rm get-pip.py
 
 # Install TensorFlow, Keras and PyTorch and other g3dnet dependencies
-    pip install tensorflow-gpu==${TENSORFLOW_VERSION} keras h5py torch==${PYTORCH_VERSION} torchvision
+    pip install tensorflow-gpu==${TENSORFLOW_VERSION} keras h5py 
+
     pip --no-cache-dir --disable-pip-version-check install --upgrade setuptools
     pip --no-cache-dir --disable-pip-version-check install future
     pip --no-cache-dir --disable-pip-version-check install 'matplotlib<3.0' # for python2.7
@@ -89,7 +90,7 @@ From: nvidia/cuda:9.0-devel-ubuntu16.04
     # disable the addition of the RPATH to compiled executables
     # this allows us to override the MPI libraries to use those
     # found via LD_LIBRARY_PATH
-    ./configure --prefix=/usr/local/mpich/install --disable-wrapper-rpath
+    ./configure --prefix=/usr/local/mpich/install --disable-wrapper-rpath --disable-fortran
     make -j 4 install
     # add to local environment to build pi.c
     export PATH=$PATH:/usr/local/mpich//install/bin
@@ -110,7 +111,7 @@ From: nvidia/cuda:9.0-devel-ubuntu16.04
 
 # Install Horovod, temporarily using CUDA stubs
     ldconfig /usr/local/cuda-9.0/targets/x86_64-linux/lib/stubs && \
-    HOROVOD_GPU_ALLREDUCE=NCCL HOROVOD_WITH_TENSORFLOW=1 HOROVOD_WITH_PYTORCH=1 pip install --no-cache-dir horovod && \
+    HOROVOD_GPU_ALLREDUCE=NCCL HOROVOD_WITH_TENSORFLOW=1 pip install --no-cache-dir horovod && \
     ldconfig
 
 # Set default NCCL parameters
