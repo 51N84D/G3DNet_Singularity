@@ -37,7 +37,7 @@ From: nvidia/cuda:9.0-devel-ubuntu16.04
 
     echo "deb http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1604/x86_64 /" > /etc/apt/sources.list.d/nvidia-ml.list
 
-    apt-get -y update && apt-get install -y --no-install-recommends --allow-downgrades \
+    apt-get -y update && apt-get install -y --no-install-recommends --allow-downgrades --allow-change-held-packages \
         build-essential \
         cmake \
         git \
