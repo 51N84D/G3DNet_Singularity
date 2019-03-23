@@ -87,7 +87,7 @@ From: nvidia/cuda:9.0-devel-ubuntu16.04
    # disable the addition of the RPATH to compiled executables
    # this allows us to override the MPI libraries to use those
    # found via LD_LIBRARY_PATH
-   ./configure --prefix=/mpich/install --disable-wrapper-rpath
+   ./configure --prefix=/mpich/install --disable-wrapper-rpath --disable-fortran
    make -j 4 install
    # add to local environment to build pi.c
    export PATH=$PATH:/mpich/install/bin
