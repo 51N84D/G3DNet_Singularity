@@ -8,6 +8,7 @@ From: nvidia/cuda:9.0-devel-ubuntu16.04
 # -----------------------------------------------------------------------------------
 
     export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-9.0/targets/x86_64-linux/lib/stubs
     export LC_ALL=C
     export HOROVOD_GPU_ALLREDUCE=NCCL
     export HOROVOD_GPU_ALLGATHER=MPI
