@@ -92,9 +92,6 @@ From: nvidia/cuda:9.0-devel-ubuntu16.04
    # add to local environment to build pi.c
    export PATH=$PATH:/mpich/install/bin
    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/mpich/install/lib
-   env | sort
-   cd /mpitestapp
-   mpicc -o pi -fPIC pi.c
 
 # Install Horovod, temporarily using CUDA stubs
     ldconfig /usr/local/cuda-9.0/targets/x86_64-linux/lib/stubs && \
